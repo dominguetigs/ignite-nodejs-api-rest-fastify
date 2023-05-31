@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 import { knex } from '../database'
-import { CheckSessionIdExists } from '../middlewares/check-session-id-exists'
+import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export async function transactionsRoutes(app: FastifyInstance) {
   // Global preHandler (only on transaction context)
@@ -11,7 +11,7 @@ export async function transactionsRoutes(app: FastifyInstance) {
     console.log(`[${request.method}] ${request.url}`)
   }) */
 
-  app.get('/', { preHandler: [CheckSessionIdExists] }, async (request) => {
+  app.get('/', { preHandler: [checkSessionIdExists] }, async (request) => {
     const { sessionId } = request.cookies
 
     const transactions = await knex('transactions')
@@ -21,7 +21,7 @@ export async function transactionsRoutes(app: FastifyInstance) {
     return { transactions }
   })
 
-  app.get('/:id', { preHandler: [CheckSessionIdExists] }, async (request) => {
+  app.get('/:id', { preHandler: [checkSessionIdExists] }, async (request) => {
     const getTransactionParamsSchema = z.object({
       id: z.string().uuid(),
     })
@@ -39,7 +39,7 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
   app.get(
     '/summary',
-    { preHandler: [CheckSessionIdExists] },
+    { preHandler: [checkSessionIdExists] },
     async (request) => {
       const { sessionId } = request.cookies
 
