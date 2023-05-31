@@ -5,22 +5,21 @@ import { z } from 'zod'
 import { knex } from '../database'
 import { CheckSessionIdExists } from '../middlewares/check-session-id-exists'
 
-// Cookies <-> Formas da gente manter contexto entre requisições
-
 export async function transactionsRoutes(app: FastifyInstance) {
-  app.get(
-    '/',
-    { preHandler: [CheckSessionIdExists] },
-    async (request, reply) => {
-      const { sessionId } = request.cookies
+  // Global preHandler (only on transaction context)
+  /* app.addHook('preHandler', async (request, reply) => {
+    console.log(`[${request.method}] ${request.url}`)
+  }) */
 
-      const transactions = await knex('transactions')
-        .where('session_id', sessionId)
-        .select()
+  app.get('/', { preHandler: [CheckSessionIdExists] }, async (request) => {
+    const { sessionId } = request.cookies
 
-      return { transactions }
-    },
-  )
+    const transactions = await knex('transactions')
+      .where('session_id', sessionId)
+      .select()
+
+    return { transactions }
+  })
 
   app.get('/:id', { preHandler: [CheckSessionIdExists] }, async (request) => {
     const getTransactionParamsSchema = z.object({
